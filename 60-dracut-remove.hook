@@ -1,0 +1,11 @@
+[Trigger]
+Type = Path
+Operation = Remove
+Target = usr/lib/modules/*/pkgbase
+
+[Action]
+Description = Removing linux initramfs...
+Depends = findutils
+When = PreTransaction
+Exec = /usr/share/libalpm/scripts/dracut-hook remove
+NeedsTargets

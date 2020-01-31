@@ -1,0 +1,13 @@
+[Trigger]
+Type = Path
+Operation = Install
+Operation = Upgrade
+Target = usr/lib/modules/*/pkgbase
+Target = usr/lib/dracut/*
+
+[Action]
+Description = Updating linux initramfs...
+Depends = findutils
+When = PostTransaction
+Exec = /usr/share/libalpm/scripts/dracut-hook install
+NeedsTargets

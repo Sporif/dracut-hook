@@ -1,0 +1,46 @@
+#!/bin/bash -e
+
+dracut_args=(--stdlog 3 --reproducible --no-hostonly-cmdline --force)
+all=0
+
+while read -r line; do
+    if [[ $line != */pkgbase ]]; then
+        # triggers when it's a change to usr/lib/dracut/*
+        all=1
+        continue
+    fi
+
+    if read -r pkgbase &> /dev/null < "${line}"; then
+        if [[ $1 == install ]]; then
+            install -Dm644 "${line%/pkgbase}/vmlinuz" "/boot/vmlinuz-${pkgbase}"
+        elif [[ $1 == remove ]]; then
+            [[ -e "/boot/vmlinuz-${pkgbase}" ]] && rm "/boot/vmlinuz-${pkgbase}"
+        fi
+        pkgbase_files+=" $line "
+    fi
+done
+
+if (( all )); then
+    pkgbase_files="$(find -P /usr/lib/modules -mindepth 2 -maxdepth 2 -name pkgbase -type f)"
+fi
+
+for pkgbase_file in ${pkgbase_files}; do
+    if read -r pkgbase &> /dev/null < "${pkgbase_file}"; then
+        ramfs_def="/boot/initramfs-${pkgbase}.img"
+        ramfs_full="/boot/initramfs-${pkgbase}-fallback.img"
+
+        if [[ $1 == install ]]; then
+            kver=${pkgbase_file#"/"}
+            kver=${kver#"usr/lib/modules/"}
+            kver=${kver%"/pkgbase"}
+
+            dracut -H "${dracut_args[@]}" --kver "${kver}" -f "${ramfs_def}"
+            dracut -N "${dracut_args[@]}" --kver "${kver}" -f "${ramfs_full}"
+            chmod 0644 "${ramfs_def}" "${ramfs_full}"
+        elif [[ $1 == remove ]]; then
+            for ramfs in "${ramfs_def}" "${ramfs_full}"; do
+                [[ -e $ramfs ]] && rm "${ramfs}"
+            done
+        fi
+    fi
+done
