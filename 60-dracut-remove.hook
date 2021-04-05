@@ -3,8 +3,14 @@ Type = Path
 Operation = Remove
 Target = usr/lib/modules/*/pkgbase
 
+[Trigger]
+Type = Package
+Operation = Remove
+Target = dracut
+Target = dracut-git
+
 [Action]
-Description = Removing linux initramfs...
+Description = Removing linux dracut initramfs...
 Depends = findutils
 When = PreTransaction
 Exec = /usr/share/libalpm/scripts/dracut-hook remove

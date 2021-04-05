@@ -6,7 +6,7 @@ Target = usr/lib/modules/*/pkgbase
 Target = usr/lib/dracut/*
 
 [Action]
-Description = Updating linux initramfs...
+Description = Updating linux dracut initramfs...
 Depends = findutils
 When = PostTransaction
 Exec = /usr/share/libalpm/scripts/dracut-hook install
